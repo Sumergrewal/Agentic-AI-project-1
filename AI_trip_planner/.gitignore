@@ -9,3 +9,4 @@ wheels/
 #virtual env
 .venv
 env
+.env
