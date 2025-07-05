@@ -1,19 +1,28 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 from agent.agent_workflow import GraphBuilder
+from utils.save_to_doc import save_document
 from starlette.responses import JSONResponse
 import os
 import datetime
 from dotenv import load_dotenv
+from pydantic import BaseModel
+load_dotenv()
 
-app=FastAPI()
+app = FastAPI()
 
-class RequestQuery(BaseModel):
-    query:str
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # set specific origins in prod
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+class QueryRequest(BaseModel):
+    question: str
 
 @app.post("/query")
-async def travel_agent(query:RequestQuery):
+async def query_travel_agent(query:QueryRequest):
     try:
         print(query)
         graph = GraphBuilder(model_provider="groq")
@@ -38,10 +47,3 @@ async def travel_agent(query:RequestQuery):
         return {"answer": final_output}
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
-
-def main():
-    print("Hello from ai-trip-planner!")
-
-
-if __name__ == "__main__":
-    main()
